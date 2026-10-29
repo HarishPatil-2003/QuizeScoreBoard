@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizeBoard</title>
+    <link rel="stylsheeth" href="/style.css">
+    <script src="script.js"  defer></script>
+</head>
+<body>
+
+    <div class="box">
+        <h2>Quize Score Board</h2>
+
+        <form action="/save" method="post">
+            <lable>Student Name</lable><br><br>
+            <input type="text" name="name" required>
+            <br><br>
+
+            <label for="name">Quize</label><br><br>
+            <select name="subject" required>
+                <option value="">Select Subject</option>
+                <option>Java</option>
+                <option>Mern</option>
+                <option>Python</option>
+                <option>JavaScript</option>
+            </select>
+            <br><br>
+
+            <lable>Score(0-100)</lable><br><br>
+            <input type="number" name="score" min="0" max="100" required>
+            <br><br>
+            
+            <button type="submit">Save</button>
+        </form>
+
+        <h2 id="result"></h2>
+        <p><a href="/score" target="_blank">View LeaderBoard</a> </p>
+    </div>
+    
+</body>
+</html>

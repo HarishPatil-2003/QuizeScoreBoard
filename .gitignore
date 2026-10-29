@@ -1,0 +1,32 @@
+# Maven build output
+target/
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+hs_err_pid*
+replay_pid*
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# OneDrive sync conflicts
+*-BOOK-*
+
+# Extension temporary tooling
+.github/modernize/

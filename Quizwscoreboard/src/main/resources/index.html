@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Score Board - Live Leaderboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation / Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-badge">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Quiz Score Board</h1>
+                    <p class="subtitle">Real-time student leaderboard & performance tracking</p>
+                </div>
+            </div>
+
+            <!-- Database Connectivity Status Pill -->
+            <div class="header-right">
+                <div id="db-status-badge" class="db-badge checking" title="Checking Supabase connectivity...">
+                    <span class="status-dot"></span>
+                    <span id="db-status-text">Checking Supabase...</span>
+                    <button id="retry-db-btn" class="btn-icon" title="Retry Connection">🔄</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Overview Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon purple">👥</div>
+                <div class="stat-details">
+                    <span class="stat-label">Total Submissions</span>
+                    <span id="stat-total" class="stat-value">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow">🏆</div>
+                <div class="stat-details">
+                    <span class="stat-label">Top Score</span>
+                    <span id="stat-highest" class="stat-value">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon teal">📈</div>
+                <div class="stat-details">
+                    <span class="stat-label">Average Score</span>
+                    <span id="stat-average" class="stat-value">0%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Supabase Notice Banner (If not yet connected) -->
+        <div id="db-notice-banner" class="db-banner hidden">
+            <div class="banner-content">
+                <strong>⚡ Supabase Database:</strong> <span id="banner-msg">Currently in fallback mode. Connect your Supabase project in <code>application.properties</code> or set <code>SUPABASE_DB_URL</code>.</span>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-layout">
+            <!-- Left Column: Add Score Form -->
+            <section class="card form-card">
+                <div class="card-header">
+                    <h2>Record New Score</h2>
+                    <p>Enter the student's quiz results below</p>
+                </div>
+
+                <form id="score-form" action="/save" method="post">
+                    <div class="form-group">
+                        <label for="student-name">Student Name <span class="req">*</span></label>
+                        <div class="input-wrapper">
+                            <span class="field-icon">👤</span>
+                            <input type="text" id="student-name" name="name" placeholder="e.g. Alex Johnson" required autocomplete="name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quiz-subject">Quiz Subject <span class="req">*</span></label>
+                        <div class="input-wrapper">
+                            <span class="field-icon">📚</span>
+                            <select id="quiz-subject" name="subject" required>
+                                <option value="" disabled selected>Select a subject</option>
+                                <option value="Java">Java</option>
+                                <option value="Mern">Mern Stack</option>
+                                <option value="Python">Python</option>
+                                <option value="JavaScript">JavaScript</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="quiz-score">Score (0 - 100) <span class="req">*</span></label>
+                            <span id="score-preview-badge" class="score-badge">0 / 100</span>
+                        </div>
+                        <div class="input-wrapper">
+                            <span class="field-icon">🎯</span>
+                            <input type="number" id="quiz-score" name="score" min="0" max="100" placeholder="e.g. 85" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn-primary">
+                        <span class="btn-text">Save Quiz Score</span>
+                        <span class="btn-loader hidden">Saving...</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Column: Live Leaderboard -->
+            <section class="card table-card">
+                <div class="card-header table-header">
+                    <div>
+                        <h2>Leaderboard</h2>
+                        <p>Rankings based on highest scores</p>
+                    </div>
+                    <button id="refresh-btn" class="btn-secondary" title="Refresh Leaderboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <!-- Subject Filter Tabs -->
+                <div class="filter-tabs" id="subject-filters">
+                    <button class="tab-btn active" data-subject="All">All Subjects</button>
+                    <button class="tab-btn" data-subject="Java">Java</button>
+                    <button class="tab-btn" data-subject="Mern">Mern</button>
+                    <button class="tab-btn" data-subject="Python">Python</button>
+                    <button class="tab-btn" data-subject="JavaScript">JavaScript</button>
+                </div>
+
+                <!-- Leaderboard Table -->
+                <div class="table-container">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px;">Rank</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Score</th>
+                                <th style="width: 140px;">Recorded At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scores-table-body">
+                            <!-- Injected by script.js -->
+                            <tr>
+                                <td colspan="5" class="table-loading">Loading scores...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/script.js"></script>
+</body>
+</html>
